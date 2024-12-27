@@ -38,7 +38,7 @@ namespace Reserves.Controllers
                 await _reservationService.ValidateReservationAsync(reservation);
                 await _reservationRepository.AddAsync(reservation);
                 await _reservationRepository.SaveChangesAsync();
-                return Ok(new { reservation.ReservationId, Status = "Created" });
+                return Ok(new { reservation.ReservationId, Status = "Reserva creada" });
             
         }
 
@@ -50,18 +50,18 @@ namespace Reserves.Controllers
 
             await _reservationRepository.DeleteAsync(reservation);
             await _reservationRepository.SaveChangesAsync();
-            return Ok(new { reservation.ReservationId, Status = "Cancelled" });
+            return Ok(new { reservation.ReservationId, Status = "Reserva cancelada" });
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int? spaceId, [FromQuery] int? userId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             var reservations = await _reservationRepository.GetAllAsync(r =>
-        (!spaceId.HasValue || r.SpaceId == spaceId) &&
-        (!userId.HasValue || r.UserId == userId) &&
-        (!startDate.HasValue || r.StartDate >= startDate) &&
-        (!endDate.HasValue || r.EndDate <= endDate),
-        includeRelated: true);
+            (!spaceId.HasValue || r.SpaceId == spaceId) &&
+            (!userId.HasValue || r.UserId == userId) &&
+            (!startDate.HasValue || r.StartDate >= startDate) &&
+            (!endDate.HasValue || r.EndDate <= endDate),
+             includeRelated: true);
 
             var result = reservations.Select(r => new
             {
