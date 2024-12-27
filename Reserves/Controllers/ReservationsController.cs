@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Reserves.Application.Dtos;
 using Reserves.Application.Interfaces;
 using Reserves.Application.Services;
 using Reserves.Domain.Entities;
@@ -19,10 +20,24 @@ namespace Reserves.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Reservation reservation)
+        public async Task<IActionResult> Create([FromBody] ReservationCreateDto reservationDto)
         {
             try
             {
+               
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                
+                var reservation = new Reservation
+                {
+                    SpaceId = reservationDto.SpaceId,
+                    UserId = reservationDto.UserId,
+                    StartDate = reservationDto.StartDate,
+                    EndDate = reservationDto.EndDate
+                };
+
                 await _reservationService.ValidateReservationAsync(reservation);
                 await _reservationRepository.AddAsync(reservation);
                 await _reservationRepository.SaveChangesAsync();
