@@ -2,7 +2,7 @@
 using Reserves.Application.Interfaces;
 using System.Linq.Expressions;
 
-namespace Reserves.Infrastructure.Repositories
+namespace Reserves.Infrastructure.Data.Repositories
 {
     public class GenericRepository<T> : IRepository<T> where T : class
     {

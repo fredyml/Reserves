@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Reserves.Application.Interfaces;
 using Reserves.Application.Services;
-using Reserves.Infrastructure;
-using Reserves.Infrastructure.Repositories;
+using Reserves.Infrastructure.Data;
+using Reserves.Infrastructure.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

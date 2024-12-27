@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Reserves.Domain.Entities;
 
-namespace Reserves.Infrastructure
+namespace Reserves.Infrastructure.Data
 {
     public class ApplicationDbContext : DbContext
     {
