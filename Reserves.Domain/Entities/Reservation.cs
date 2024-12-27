@@ -13,11 +13,11 @@
         public void Validate()
         {
             if (StartDate >= EndDate)
-                throw new ArgumentException("StartDate must be earlier than EndDate.");
+                throw new ArgumentException("Fecha de inicio debe ser anterior a Fecha Final.");
 
             var duration = EndDate - StartDate;
             if (duration.TotalMinutes < 30 || duration.TotalHours > 8)
-                throw new ArgumentException("Reservations must be between 30 minutes and 8 hours.");
+                throw new ArgumentException("Las reservas deben ser entre 30 minutos y 8 horas.");
         }
     }
 }

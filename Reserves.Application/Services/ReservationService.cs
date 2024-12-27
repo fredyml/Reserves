@@ -29,7 +29,7 @@ namespace Reserves.Application.Services
                  (reservation.EndDate > r.StartDate && reservation.EndDate <= r.EndDate)));
 
             if (overlappingReservations.Any())
-                throw new InvalidOperationException("Reservation conflicts with an existing reservation.");
+                throw new InvalidOperationException("La reserva entra en conflicto con una reserva existente.");
 
             var userReservations = await _reservationRepository.GetAllAsync(r =>
                 r.UserId == reservation.UserId &&
@@ -37,7 +37,7 @@ namespace Reserves.Application.Services
                  (reservation.EndDate > r.StartDate && reservation.EndDate <= r.EndDate)));
 
             if (userReservations.Any())
-                throw new InvalidOperationException("User already has a reservation in the same time frame.");
+                throw new InvalidOperationException("El usuario ya tiene una reserva en el mismo período de tiempo.");
         }
     }
 }
