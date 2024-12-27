@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Reserves.Application.Interfaces;
+using Reserves.Domain.Entities;
 using System.Linq.Expressions;
 
 namespace Reserves.Infrastructure.Data.Repositories
@@ -20,12 +21,25 @@ namespace Reserves.Infrastructure.Data.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null)
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, bool includeRelated = false)
         {
+            IQueryable<T> query = _dbSet;
+
+            if (includeRelated)
+            {
+                // En este caso incluimos las propiedades relacionadas
+                if (typeof(T) == typeof(Reservation))
+                {
+                    query = query.Include(r => (r as Reservation).Space)
+                                 .Include(r => (r as Reservation).User);
+                }
+            }
+
             return predicate == null
-                ? await _dbSet.ToListAsync()
-                : await _dbSet.Where(predicate).ToListAsync();
+                ? await query.ToListAsync()
+                : await query.Where(predicate).ToListAsync();
         }
+
 
         public async Task AddAsync(T entity)
         {

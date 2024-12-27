@@ -64,12 +64,26 @@ namespace Reserves.Controllers
         public async Task<IActionResult> GetAll([FromQuery] int? spaceId, [FromQuery] int? userId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             var reservations = await _reservationRepository.GetAllAsync(r =>
-                (!spaceId.HasValue || r.SpaceId == spaceId) &&
-                (!userId.HasValue || r.UserId == userId) &&
-                (!startDate.HasValue || r.StartDate >= startDate) &&
-                (!endDate.HasValue || r.EndDate <= endDate));
+        (!spaceId.HasValue || r.SpaceId == spaceId) &&
+        (!userId.HasValue || r.UserId == userId) &&
+        (!startDate.HasValue || r.StartDate >= startDate) &&
+        (!endDate.HasValue || r.EndDate <= endDate),
+        includeRelated: true);
 
-            return Ok(reservations);
+            var result = reservations.Select(r => new
+            {
+                r.ReservationId,
+                r.SpaceId,
+                SpaceName = r.Space.Name,
+                SpaceDescription = r.Space.Description,
+                r.UserId,
+                UserName = r.User.Name,
+                UserEmail = r.User.Email,
+                r.StartDate,
+                r.EndDate
+            });
+
+            return Ok(result);
         }
     }
 }
