@@ -27,7 +27,6 @@ namespace Reserves.Infrastructure.Data.Repositories
 
             if (includeRelated)
             {
-                // En este caso incluimos las propiedades relacionadas
                 if (typeof(T) == typeof(Reservation))
                 {
                     query = query.Include(r => (r as Reservation).Space)
@@ -55,6 +54,8 @@ namespace Reserves.Infrastructure.Data.Repositories
         {
             _dbSet.Remove(entity);
         }
+
+        public async Task<IEnumerable<Reservation>> GetOverlappingReservationsAsync(int spaceId, DateTime startDate, DateTime endDate) { return await _context.Set<Reservation>().Where(r => r.SpaceId == spaceId && ((startDate >= r.StartDate && startDate < r.EndDate) || (endDate > r.StartDate && endDate <= r.EndDate) || (startDate < r.StartDate && endDate > r.EndDate))).ToListAsync(); }
 
         public async Task SaveChangesAsync()
         {

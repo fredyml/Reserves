@@ -1,36 +1,59 @@
+using AspNetCoreRateLimit;
 using Microsoft.EntityFrameworkCore;
 using Reserves.Application.Interfaces;
 using Reserves.Application.Services;
+using Reserves.Filters;
 using Reserves.Infrastructure.Data;
 using Reserves.Infrastructure.Data.Repositories;
+using Reserves.Infrastructure.Logs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-// Configuración de Entity Framework Core con SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Inyección de dependencias para repositorios genéricos
+
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
-// Inyección de dependencias para servicios
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<GlobalExceptionFilter>();
+});
+
+SerilogConfiguration.ConfigureLogging(builder);
+
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.GeneralRules = new List<RateLimitRule>
+    {
+        new RateLimitRule
+        {
+            Endpoint = "*",
+            Limit = 60,
+            Period = "1m"
+        }
+    };
+});
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+
 builder.Services.AddScoped<ReservationService>();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseIpRateLimiting();
 
 app.UseHttpsRedirection();
 

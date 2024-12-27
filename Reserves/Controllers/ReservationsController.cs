@@ -22,9 +22,6 @@ namespace Reserves.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ReservationCreateDto reservationDto)
         {
-            try
-            {
-               
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
@@ -42,11 +39,7 @@ namespace Reserves.Controllers
                 await _reservationRepository.AddAsync(reservation);
                 await _reservationRepository.SaveChangesAsync();
                 return Ok(new { reservation.ReservationId, Status = "Created" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Error = ex.Message });
-            }
+            
         }
 
         [HttpDelete("{id}")]

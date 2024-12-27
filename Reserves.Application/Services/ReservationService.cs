@@ -1,43 +1,47 @@
 ﻿using Reserves.Application.Interfaces;
 using Reserves.Domain.Entities;
+using Reserves.Domain.Exceptions;
 
 namespace Reserves.Application.Services
 {
     public class ReservationService
     {
         private readonly IRepository<Reservation> _reservationRepository;
-        private readonly IRepository<Space> _spaceRepository;
-        private readonly IRepository<User> _userRepository;
 
         public ReservationService(
-            IRepository<Reservation> reservationRepository,
-            IRepository<Space> spaceRepository,
-            IRepository<User> userRepository)
+            IRepository<Reservation> reservationRepository)
         {
             _reservationRepository = reservationRepository;
-            _spaceRepository = spaceRepository;
-            _userRepository = userRepository;
         }
 
         public async Task ValidateReservationAsync(Reservation reservation)
         {
             reservation.Validate();
 
-            var overlappingReservations = await _reservationRepository.GetAllAsync(r =>
+            var errors = new List<string>();
+            
+            var overlappingSpaceReservations = await _reservationRepository.GetAllAsync(r =>
                 r.SpaceId == reservation.SpaceId &&
-                ((reservation.StartDate >= r.StartDate && reservation.StartDate < r.EndDate) ||
-                 (reservation.EndDate > r.StartDate && reservation.EndDate <= r.EndDate)));
+                reservation.StartDate < r.EndDate && reservation.EndDate > r.StartDate);
 
-            if (overlappingReservations.Any())
-                throw new InvalidOperationException("La reserva entra en conflicto con una reserva existente.");
-
-            var userReservations = await _reservationRepository.GetAllAsync(r =>
+            if (overlappingSpaceReservations.Any())
+            {
+                errors.Add("La reserva entra en conflicto con una reserva existente para el mismo espacio.");
+            }
+            
+            var overlappingUserReservations = await _reservationRepository.GetAllAsync(r =>
                 r.UserId == reservation.UserId &&
-                ((reservation.StartDate >= r.StartDate && reservation.StartDate < r.EndDate) ||
-                 (reservation.EndDate > r.StartDate && reservation.EndDate <= r.EndDate)));
+                reservation.StartDate < r.EndDate && reservation.EndDate > r.StartDate);
 
-            if (userReservations.Any())
-                throw new InvalidOperationException("El usuario ya tiene una reserva en el mismo período de tiempo.");
+            if (overlappingUserReservations.Any())
+            {
+                errors.Add("El usuario ya tiene una reserva en el mismo período de tiempo.");
+            }
+            
+            if (errors.Any())
+            {
+                throw new DataValidationException(string.Join(", ", errors));
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using Reserves.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Reserves.Application.Interfaces
 {
@@ -10,5 +11,6 @@ namespace Reserves.Application.Interfaces
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
         Task SaveChangesAsync();
+        Task<IEnumerable<Reservation>> GetOverlappingReservationsAsync(int spaceId, DateTime startDate, DateTime endDate);
     }
 }
