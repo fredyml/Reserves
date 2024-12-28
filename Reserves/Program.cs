@@ -3,15 +3,25 @@ using Microsoft.EntityFrameworkCore;
 using Reserves.Application.Interfaces;
 using Reserves.Application.Services;
 using Reserves.Filters;
-using Reserves.Infrastructure.Data;
 using Reserves.Infrastructure.Data.Repositories;
+using Reserves.Infrastructure.Data;
 using Reserves.Infrastructure.Logs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200") // URL del cliente Angular
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
@@ -38,7 +48,6 @@ builder.Services.Configure<IpRateLimitOptions>(options =>
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
-
 builder.Services.AddScoped<ReservationService>();
 
 builder.Services.AddControllers();
@@ -57,8 +66,11 @@ app.UseIpRateLimiting();
 
 app.UseHttpsRedirection();
 
+// Usa CORS antes de Authorization
+app.UseCors("AllowAngularClient");
+
 app.UseAuthorization();
 
-app.MapControllers();  
+app.MapControllers();
 
 app.Run();

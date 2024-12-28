@@ -8,15 +8,19 @@ namespace Reserves.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReservationsController : ControllerBase
+    public class ReservationManagementController : ControllerBase
     {
         private readonly IRepository<Reservation> _reservationRepository;
+        private readonly IRepository<Space> _spaceRepository;
+        private readonly IRepository<User> _userRepository;
         private readonly ReservationService _reservationService;
 
-        public ReservationsController(IRepository<Reservation> reservationRepository, ReservationService reservationService)
+        public ReservationManagementController(IRepository<Reservation> reservationRepository, IRepository<Space> spaceRepository, IRepository<User> userRepository,ReservationService reservationService)
         {
             _reservationRepository = reservationRepository;
             _reservationService = reservationService;
+            _spaceRepository = spaceRepository;
+            _userRepository = userRepository;
         }
 
         [HttpPost]
@@ -78,5 +82,46 @@ namespace Reserves.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("available-spaces")]
+        public async Task<IActionResult> GetAvailableSpaces()
+        {
+            var spaces = await _spaceRepository.GetAllAsync();
+
+            if (spaces == null || !spaces.Any())
+            {
+                return NotFound("No se encontraron espacios.");
+            }
+           
+            var availableSpaces = spaces.Select(s => new
+            {
+                s.SpaceId,
+                s.Name,
+                s.Description
+            });
+
+            return Ok(availableSpaces);
+        }
+
+        [HttpGet("available-users")]
+        public async Task<IActionResult> GetAvailableUsers()
+        {
+            var users = await _userRepository.GetAllAsync();
+
+            if (users == null || !users.Any())
+            {
+                return NotFound("No se encontraron usuarios.");
+            }
+           
+            var availableUsers = users.Select(u => new
+            {
+                u.UserId,
+                u.Name,
+                u.Email
+            });
+
+            return Ok(availableUsers);
+        }
+
     }
 }
